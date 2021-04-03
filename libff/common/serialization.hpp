@@ -1,14 +1,11 @@
 /** @file
  *****************************************************************************
-
  Declaration of serialization routines and constants.
-
  *****************************************************************************
  * @author     This file is part of libff, developed by SCIPR Lab
  *             and contributors (see AUTHORS).
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
-
 #ifndef SERIALIZATION_HPP_
 #define SERIALIZATION_HPP_
 
@@ -105,7 +102,7 @@ std::ostream& operator<<(std::ostream& out, const std::set<T> &s);
 template<typename T>
 std::istream& operator>>(std::istream& in, std::set<T> &s);
 
-} // libff
+} // namespace libff
 
 #include <libff/common/serialization.tcc>
 

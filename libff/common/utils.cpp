@@ -1,12 +1,11 @@
 /** @file
  *****************************************************************************
- Implementation of misc math and serialization utility functions
+ Implementation of misc math and serialization utility functions.
  *****************************************************************************
  * @author     This file is part of libff, developed by SCIPR Lab
  *             and contributors (see AUTHORS).
  * @copyright  MIT license (see LICENSE file)
  *****************************************************************************/
-
 #include <algorithm>
 #include <cassert>
 #include <cstdarg>
@@ -16,6 +15,12 @@
 
 namespace libff {
 
+using std::size_t;
+
+/**
+ * Round n to the next power of two.
+ * If n is a power of two, return n
+ */
 size_t get_power_of_two(size_t n)
 {
     n--;
@@ -24,6 +29,7 @@ size_t get_power_of_two(size_t n)
     n |= n >> 4;
     n |= n >> 8;
     n |= n >> 16;
+    n |= n >> 32;
     n++;
 
     return n;
@@ -48,13 +54,13 @@ size_t to_twos_complement(int i, size_t w)
 {
     assert(i >= -(1l<<(w-1)));
     assert(i < (1l<<(w-1)));
-    return (i >= 0) ? i : i + (1l<<w);
+    return (i >= 0) ? i : i + (1L<<w);
 }
 
 int from_twos_complement(size_t i, size_t w)
 {
-    assert(i < (1ul<<w));
-    return (i < (1ul<<(w-1))) ? i : i - (1ul<<w);
+    assert(i < (1UL<<w));
+    return (i < (1UL<<(w-1))) ? i : i - (1UL<<w);
 }
 
 size_t bitreverse(size_t n, const size_t l)
@@ -75,7 +81,7 @@ bit_vector int_list_to_bits(const std::initializer_list<unsigned long> &l, const
     {
         for (size_t j = 0; j < wordsize; ++j)
         {
-            res[i*wordsize + j] = (*(l.begin()+i) & (1ul<<(wordsize-1-j)));
+            res[i*wordsize + j] = (*(l.begin()+i) & (1UL<<(wordsize-1-j))) != 0U;
         }
     }
     return res;
@@ -83,6 +89,10 @@ bit_vector int_list_to_bits(const std::initializer_list<unsigned long> &l, const
 
 long long div_ceil(long long x, long long y)
 {
+    if (y == 0)
+    {
+        throw std::invalid_argument("libff::div_ceil: division by zero, second argument must be non-zero");
+    }
     return (x + (y-1)) / y;
 }
 
@@ -90,7 +100,7 @@ bool is_little_endian()
 {
     uint64_t a = 0x12345678;
     unsigned char *c = (unsigned char*)(&a);
-    return (*c = 0x78);
+    return (*c == 0x78);
 }
 
 std::string FORMAT(const std::string &prefix, const char* format, ...)
@@ -108,9 +118,9 @@ std::string FORMAT(const std::string &prefix, const char* format, ...)
 void serialize_bit_vector(std::ostream &out, const bit_vector &v)
 {
     out << v.size() << "\n";
-    for (size_t i = 0; i < v.size(); ++i)
+    for (auto b : v)
     {
-        out << v[i] << "\n";
+        out << b << "\n";
     }
 }
 
@@ -126,4 +136,5 @@ void deserialize_bit_vector(std::istream &in, bit_vector &v)
         v[i] = b;
     }
 }
-} // libff
+
+} // namespace libff

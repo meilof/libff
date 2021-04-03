@@ -10,7 +10,7 @@
 
 #ifndef BN128_PAIRING_HPP_
 #define BN128_PAIRING_HPP_
-#include "depends/ate-pairing/include/bn.h"
+#include "ate-pairing/include/bn.h"
 
 #include <libff/algebra/curves/bn128/bn128_g1.hpp>
 #include <libff/algebra/curves/bn128/bn128_g2.hpp>
@@ -49,5 +49,5 @@ bn128_Fq12 bn128_ate_miller_loop(const bn128_ate_G1_precomp &prec_P,
 
 bn128_GT bn128_final_exponentiation(const bn128_Fq12 &elt);
 
-} // libff
+} // namespace libff
 #endif // BN128_PAIRING_HPP_

@@ -19,6 +19,8 @@
 
 namespace libff {
 
+using std::size_t;
+
 bool bn128_ate_G1_precomp::operator==(const bn128_ate_G1_precomp &other) const
 {
     return (this->P[0] == other.P[0] &&
@@ -28,12 +30,17 @@ bool bn128_ate_G1_precomp::operator==(const bn128_ate_G1_precomp &other) const
 
 std::ostream& operator<<(std::ostream &out, const bn128_ate_G1_precomp &prec_P)
 {
-    for (size_t i = 0; i < 3; ++i)
+    for (auto p : prec_P.P)
     {
 if (!binary_output) {
         out << prec_P.P[i] << "\n";
 } else {
         out.write((char*) &prec_P.P[i], sizeof(prec_P.P[i]));
+}
+if (!binary_output) {
+        out << p << "\n";
+} else {
+        out.write((char*) &p, sizeof(p));
 }
     }
     return out;
@@ -41,15 +48,15 @@ if (!binary_output) {
 
 std::istream& operator>>(std::istream &in, bn128_ate_G1_precomp &prec_P)
 {
-    for (size_t i = 0; i < 3; ++i)
+    for (auto p : prec_P.P)
     {
 if (!binary_output) {
-        in >> prec_P.P[i];
+        in >> p;
         consume_newline(in);
 } else {
-        in.read((char*) &prec_P.P[i], sizeof(prec_P.P[i]));
+        in.read((char*) &p, sizeof(p));
 }
-    }
+	}
     return in;
 }
 
@@ -80,53 +87,53 @@ bool bn128_ate_G2_precomp::operator==(const bn128_ate_G2_precomp &other) const
 
 std::ostream& operator<<(std::ostream &out, const bn128_ate_G2_precomp &prec_Q)
 {
-    for (size_t i = 0; i < 3; ++i)
+    for (auto q : prec_Q.Q)
     {
 if (!binary_output) {
-        out << prec_Q.Q[i].a_ << "\n";
-        out << prec_Q.Q[i].b_ << "\n";
+        out << q.a_ << "\n";
+        out << q.b_ << "\n";
 } else {
-        out.write((char*) &prec_Q.Q[i].a_, sizeof(prec_Q.Q[i].a_));
-        out.write((char*) &prec_Q.Q[i].b_, sizeof(prec_Q.Q[i].b_));
+        out.write((char*) &q.a_, sizeof(q.a_));
+        out.write((char*) &q.b_, sizeof(q.b_));
 }
-    }
+	}
 
     out << prec_Q.coeffs.size() << "\n";
 
-    for (size_t i = 0; i < prec_Q.coeffs.size(); ++i)
+    for (auto c : prec_Q.coeffs)
     {
 if (!binary_output) {
-        out << prec_Q.coeffs[i].a_.a_ << "\n";
-        out << prec_Q.coeffs[i].a_.b_ << "\n";
-        out << prec_Q.coeffs[i].b_.a_ << "\n";
-        out << prec_Q.coeffs[i].b_.b_ << "\n";
-        out << prec_Q.coeffs[i].c_.a_ << "\n";
-        out << prec_Q.coeffs[i].c_.b_ << "\n";
+        out << c.a_.a_ << "\n";
+        out << c.a_.b_ << "\n";
+        out << c.b_.a_ << "\n";
+        out << c.b_.b_ << "\n";
+        out << c.c_.a_ << "\n";
+        out << c.c_.b_ << "\n";
 } else {
-        out.write((char*) &prec_Q.coeffs[i].a_.a_, sizeof(prec_Q.coeffs[i].a_.a_));
-        out.write((char*) &prec_Q.coeffs[i].a_.b_, sizeof(prec_Q.coeffs[i].a_.b_));
-        out.write((char*) &prec_Q.coeffs[i].b_.a_, sizeof(prec_Q.coeffs[i].b_.a_));
-        out.write((char*) &prec_Q.coeffs[i].b_.b_, sizeof(prec_Q.coeffs[i].b_.b_));
-        out.write((char*) &prec_Q.coeffs[i].c_.a_, sizeof(prec_Q.coeffs[i].c_.a_));
-        out.write((char*) &prec_Q.coeffs[i].c_.b_, sizeof(prec_Q.coeffs[i].c_.b_));
+        out.write((char*) &c.a_.a_, sizeof(c.a_.a_));
+        out.write((char*) &c.a_.b_, sizeof(c.a_.b_));
+        out.write((char*) &c.b_.a_, sizeof(c.b_.a_));
+        out.write((char*) &c.b_.b_, sizeof(c.b_.b_));
+        out.write((char*) &c.c_.a_, sizeof(c.c_.a_));
+        out.write((char*) &c.c_.b_, sizeof(c.c_.b_));
 }
-    }
+	}
 
     return out;
 }
 
 std::istream& operator>>(std::istream &in, bn128_ate_G2_precomp &prec_Q)
 {
-    for (size_t i = 0; i < 3; ++i)
+    for (auto q : prec_Q.Q)
     {
 if (!binary_output) {
-        in >> prec_Q.Q[i].a_;
+        in >> q.a_;
         consume_newline(in);
-        in >> prec_Q.Q[i].b_;
+        in >> q.b_;
         consume_newline(in);
 } else {
-        in.read((char*) &prec_Q.Q[i].a_, sizeof(prec_Q.Q[i].a_));
-        in.read((char*) &prec_Q.Q[i].b_, sizeof(prec_Q.Q[i].b_));
+        in.read((char*) &q.a_, sizeof(q.a_));
+        in.read((char*) &q.b_, sizeof(q.b_));
 }
     }
 
@@ -166,7 +173,9 @@ bn128_ate_G1_precomp bn128_ate_precompute_G1(const bn128_G1& P)
     enter_block("Call to bn128_ate_precompute_G1");
 
     bn128_ate_G1_precomp result;
-    bn::ecop::NormalizeJac(result.P, P.coord);
+    bn::Fp P_coord[3];
+    P.fill_coord(P_coord);
+    bn::ecop::NormalizeJac(result.P, P_coord);
 
     leave_block("Call to bn128_ate_precompute_G1");
     return result;
@@ -177,7 +186,9 @@ bn128_ate_G2_precomp bn128_ate_precompute_G2(const bn128_G2& Q)
     enter_block("Call to bn128_ate_precompute_G2");
 
     bn128_ate_G2_precomp result;
-    bn::components::precomputeG2(result.coeffs, result.Q, Q.coord);
+    bn::Fp2 Q_coord[3];
+    Q.fill_coord(Q_coord);
+    bn::components::precomputeG2(result.coeffs, result.Q, Q_coord);
 
     leave_block("Call to bn128_ate_precompute_G2");
     return result;
@@ -209,4 +220,4 @@ bn128_GT bn128_final_exponentiation(const bn128_Fq12 &elt)
     leave_block("Call to bn128_final_exponentiation");
     return eltcopy;
 }
-} // libff
+} // namespace libff

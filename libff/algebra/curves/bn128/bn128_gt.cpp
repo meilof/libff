@@ -67,4 +67,4 @@ if (!binary_output) {
 }
     return in;
 }
-} // libff
+} // namespace libff
